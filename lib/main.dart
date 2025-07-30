@@ -9,12 +9,59 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello, World!'),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Color.fromARGB(255, 17, 1, 195),
+          brightness: Brightness.light,  //TO-DO - dark theme-Brightness.dark
         ),
+        textTheme: TextTheme(
+          displayLarge: const TextStyle(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
+          ),
+          
+        )
       ),
+      home: HomeScreen()
     );
   }
 }
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeElemColor=Theme.of(context);
+
+    return Scaffold(  
+        body: Center( 
+          child: Column( 
+            mainAxisSize: MainAxisSize.min,
+
+            children: <Widget>[
+              const Text(
+              'Înregistrează o tranzacție',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            IconButton(
+              iconSize: 60,
+              icon: Icon(
+                Icons.add_circle_outline,
+                color: themeElemColor.colorScheme.primary,
+              ),
+              onPressed: () {
+                //TO-DO - logica de adaugare a tranzactiilor
+                print('Add button pressed.');
+              },
+            )
+            ],
+          ),
+        )
+    );
+  }
+}
+
