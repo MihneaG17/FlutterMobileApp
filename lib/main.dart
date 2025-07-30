@@ -29,8 +29,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex=0;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +67,29 @@ class HomeScreen extends StatelessWidget {
             )
             ],
           ),
-        )
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+
+          //backgroundColor: Colors.white,
+          selectedItemColor: themeElemColor.colorScheme.primary,
+          unselectedItemColor: Colors.grey,
+
+          currentIndex: _selectedIndex,
+
+          onTap: (int index) {
+            setState(() {
+              _selectedIndex=index;
+            });
+          },
+
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Acasa'),
+            BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Istoric'),
+            BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Buget'),
+            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setari'),
+          ]
+        ),
     );
   }
 }
