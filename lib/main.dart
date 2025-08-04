@@ -50,21 +50,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
             children: <Widget>[
               const Text(
-              'Înregistrează o tranzacție',
+              'Add a transaction',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            IconButton(
-              iconSize: 60,
-              icon: Icon(
-                Icons.add_circle_outline,
-                color: themeElemColor.colorScheme.primary,
-              ),
-              onPressed: () {
-                //TO-DO - logica de adaugare a tranzactiilor
-                print('Add button pressed.');
-              },
-            )
+            ElevatedButton(
+              onPressed: () {},
+             child: Icon(Icons.add, color: Colors.white, size: 20,),
+              style: ElevatedButton.styleFrom(
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(20.0),
+                backgroundColor: themeElemColor.colorScheme.primary,
+                foregroundColor: Colors.red,
+              ) ,
+            ),
             ],
           ),
         ),
@@ -84,10 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
           },
 
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Acasa'),
-            BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Istoric'),
-            BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Buget'),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setari'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+            BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Budget'),
+            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           ]
         ),
     );
