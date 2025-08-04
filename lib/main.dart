@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moneyapp/pages/add_transactions_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,14 +56,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionScreen()));
+              },
              child: Icon(Icons.add, color: Colors.white, size: 20,),
               style: ElevatedButton.styleFrom(
                 shape: CircleBorder(),
                 padding: EdgeInsets.all(20.0),
                 backgroundColor: themeElemColor.colorScheme.primary,
                 foregroundColor: Colors.red,
-              ) ,
+              ) 
             ),
             ],
           ),
