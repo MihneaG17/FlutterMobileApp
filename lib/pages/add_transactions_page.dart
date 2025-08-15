@@ -14,6 +14,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final typeItems = ['Food', 'Travel', 'Entertainment', 'Utilities', 'Other'];
 
   String? selectedValue;
+  String textHolder='';
+
+  TextEditingController _dateController = TextEditingController();
+
+  void clickFunctionSaveBtn() {
+    setState(() {
+      textHolder='Transaction saved';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +41,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               const SizedBox(height: 20),
               Text('Enter the transaction details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 30),
-              Text('Text2'),
+              Container(
+                child: TextField(
+                  decoration: InputDecoration(border: OutlineInputBorder(), labelText: 'Amount')
+                ),
+              ),
               const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -56,11 +69,52 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     },
                   ))
               ),
+              const SizedBox(height: 30),
+              Container(
+                child: TextField(
+                  controller: _dateController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(), 
+                    labelText: 'Date', 
+                    suffixIcon: Icon(Icons.calendar_today)),
+                onTap: (){
+                  _selectDate();
+                },
+                ),
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  //TO-DO - salvare date
+                  clickFunctionSaveBtn();
+                },
+                child: const Text('Save')
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(textHolder, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16), ),
+              )
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _selectDate() async {
+    DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(), 
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2100)
+    );
+
+    if(pickedDate != null)
+    {
+      setState(() {
+        _dateController.text=pickedDate.toString().split(" ")[0];
+      });
+    }
   }
 }
 

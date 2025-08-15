@@ -59,13 +59,13 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionScreen()));
               },
-             child: Icon(Icons.add, color: Colors.white, size: 20,),
               style: ElevatedButton.styleFrom(
                 shape: CircleBorder(),
                 padding: EdgeInsets.all(20.0),
                 backgroundColor: themeElemColor.colorScheme.primary,
                 foregroundColor: Colors.red,
-              ) 
+              ),
+             child: Icon(Icons.add, color: Colors.white, size: 20,) 
             ),
             ],
           ),
