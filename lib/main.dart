@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart'; 
+import 'package:moneyapp/transaction_model.dart';
 import 'package:moneyapp/pages/add_transactions_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); //widgets initialized before Hive start
+
+  await Hive.initFlutter(); //initialized Hive
+
+  Hive.registerAdapter(TransactionAdapter()); //auto-generated Hive Adapter
+
   runApp(const MyApp());
 }
 
