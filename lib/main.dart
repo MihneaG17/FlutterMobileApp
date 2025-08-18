@@ -10,6 +10,8 @@ Future<void> main() async {
 
   Hive.registerAdapter(TransactionAdapter()); //auto-generated Hive Adapter
 
+  await Hive.openBox<Transaction>('transactions');
+
   runApp(const MyApp());
 }
 
@@ -53,31 +55,93 @@ class _HomeScreenState extends State<HomeScreen> {
     final themeElemColor=Theme.of(context);
 
     return Scaffold(  
-        body: Center( 
-          child: Column( 
-            mainAxisSize: MainAxisSize.min,
-
-            children: <Widget>[
-              const Text(
-              'Add a transaction',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionScreen()));
-              },
-              style: ElevatedButton.styleFrom(
-                shape: CircleBorder(),
-                padding: EdgeInsets.all(20.0),
-                backgroundColor: themeElemColor.colorScheme.primary,
-                foregroundColor: Colors.red,
+        body: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+            children: [
+              Column(
+                children: [
+                  const SizedBox(height: 200),
+                  const Text(
+                    'Add a transaction',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddTransactionScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(20.0),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.red,
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
+                  ),
+                ],
               ),
-             child: Icon(Icons.add, color: Colors.white, size: 20,) 
-            ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ValueListenableBuilder(
+                  valueListenable: Hive.box<Transaction>('transactions').listenable(),
+                  builder: (context, Box<Transaction> box, _) {
+                    
+                    if (box.isEmpty) {
+                      return const Text(
+                        "No transactions registered",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      );
+                    }
+
+                    final transactions = box.values.toList().reversed.take(3).toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Latest transactions registered",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            children: transactions.map((tx) {
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.monetization_on,
+                                    color: Colors.green),
+                                title: Text(tx.category),
+                                subtitle: Text(tx.date.toString().split(" ")[0]),
+                                trailing: Text(
+                                  "${tx.amount.toStringAsFixed(2)} USD",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
+
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
 

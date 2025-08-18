@@ -14,7 +14,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final typeItems = ['Food', 'Travel', 'Entertainment', 'Utilities', 'Other'];
 
   String? selectedValue;
-  String textHolder='';
 
   final _amountController=TextEditingController();
   final _dateController=TextEditingController();
@@ -57,18 +56,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
   
-
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add a transaction'),
       ),
-      body: SingleChildScrollView( //Center
+      body: SingleChildScrollView( 
         child: Padding(
           padding: const EdgeInsets.all(24.0),
 
           child: Column(
-            
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               const SizedBox(height: 20),
@@ -127,9 +125,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 child: const Text('Save')
               ),
               const SizedBox(height: 20),
-              Center(
-                child: Text(textHolder, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16), ),
-              )
             ],
           ),
         ),
