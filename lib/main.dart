@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart'; 
+
 import 'package:moneyapp/transaction_model.dart';
 import 'package:moneyapp/pages/add_transactions_page.dart';
+import 'package:moneyapp/pages/history_page.dart';
+import 'package:moneyapp/pages/budget_page.dart';
+import 'package:moneyapp/pages/settings_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); //widgets initialized before Hive start
@@ -23,6 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Color.fromARGB(255, 17, 1, 195),
           brightness: Brightness.light,  //TO-DO - dark theme-Brightness.dark
@@ -32,7 +37,6 @@ class MyApp extends StatelessWidget {
             fontSize: 72,
             fontWeight: FontWeight.bold,
           ),
-          
         )
       ),
       home: HomeScreen()
@@ -48,122 +52,143 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  PageController _pageController=PageController();
   int _selectedIndex=0;
 
+  void _onPageChanged(int index) {
+    setState(() {
+      _selectedIndex=index;
+    });
+  }
+  void _onItemTapped(int i)
+  {
+    _pageController.jumpToPage(i);
+  }
+  
   @override
   Widget build(BuildContext context) {
     final themeElemColor=Theme.of(context);
 
     return Scaffold(  
-        body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-            children: [
-              Column(
-                children: [
-                  const SizedBox(height: 200),
-                  const Text(
-                    'Add a transaction',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => AddTransactionScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(20.0),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.red,
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 20),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ValueListenableBuilder(
-                  valueListenable: Hive.box<Transaction>('transactions').listenable(),
-                  builder: (context, Box<Transaction> box, _) {
-                    
-                    if (box.isEmpty) {
-                      return const Text(
-                        "No transactions registered",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      );
-                    }
-
-                    final transactions = box.values.toList().reversed.take(3).toList();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Latest transactions registered",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Column(
-                            children: transactions.map((tx) {
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.monetization_on,
-                                    color: Colors.green),
-                                title: Text(tx.category),
-                                subtitle: Text(tx.date.toString().split(" ")[0]),
-                                trailing: Text(
-                                  "${tx.amount.toStringAsFixed(2)} USD",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          children: [
+            _buildHomePage(context),
+            HistoryPage(),
+            BudgetPage(),
+            SettingsPage()
+          ],
         ),
-
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
 
           //backgroundColor: Colors.white,
           selectedItemColor: themeElemColor.colorScheme.primary,
           unselectedItemColor: Colors.grey,
-
           currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
 
-          onTap: (int index) {
-            setState(() {
-              _selectedIndex=index;
-            });
-          },
-
-          items: [
+          items:  const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
             BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Budget'),
             BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           ]
         ),
+    );
+  }
+
+  SafeArea _buildHomePage(BuildContext context) {
+    return SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+          children: [
+            Column(
+              children: [
+                const SizedBox(height: 200),
+                const Text(
+                  'Add a transaction',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddTransactionScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(20.0),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.red,
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 20),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<Transaction>('transactions').listenable(),
+                builder: (context, Box<Transaction> box, _) {
+                  
+                  if (box.isEmpty) {
+                    return const Text(
+                      "No transactions registered",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    );
+                  }
+
+                  final transactions = box.values.toList().reversed.take(3).toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Latest transactions registered",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      latestTransactions(transactions),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+  }
+
+  Container latestTransactions(List<Transaction> transactions) {
+    return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+              ),
+          child: Column(
+          children: transactions.map((tx) {
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.monetization_on,
+                color: Colors.green),
+            title: Text(tx.category),
+            subtitle: Text(tx.date.toString().split(" ")[0]),
+            trailing: Text(
+            "${tx.amount.toStringAsFixed(2)} USD",
+            style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+                ),
+              ),
+            );
+        }).toList(),
+      ),
     );
   }
 }
