@@ -10,10 +10,9 @@ import 'package:moneyapp/pages/settings_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); //widgets initialized before Hive start
 
-  await Hive.initFlutter(); //initialized Hive
-
-  Hive.registerAdapter(TransactionAdapter()); //auto-generated Hive Adapter
-
+  //Hive initialisations
+  await Hive.initFlutter(); 
+  Hive.registerAdapter(TransactionAdapter()); 
   await Hive.openBox<Transaction>('transactions');
 
   runApp(const MyApp());
@@ -99,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  //HomePage
   SafeArea _buildHomePage(BuildContext context) {
     return SafeArea(
         child: Column(
