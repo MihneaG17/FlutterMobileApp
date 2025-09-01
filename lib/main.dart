@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:moneyapp/transaction_model.dart';
 import 'package:moneyapp/pages/add_transactions_page.dart';
 import 'package:moneyapp/pages/history_page.dart';
-import 'package:moneyapp/pages/budget_page.dart';
+import 'package:moneyapp/pages/stats_page.dart';
 import 'package:moneyapp/pages/settings_page.dart';
 
 Future<void> main() async {
@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildHomePage(context),
             HistoryPage(),
-            BudgetPage(),
+            StatsPage(),
             SettingsPage()
           ],
         ),
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           items:  const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-            BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Budget'),
+            BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Stats'),
             BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
           ]
         ),
