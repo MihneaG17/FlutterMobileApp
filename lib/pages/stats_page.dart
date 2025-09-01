@@ -44,8 +44,8 @@ class _StatsPageState extends State<StatsPage> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton(items: const 
                         [
-                          DropdownMenuItem(child: Text("amount"), value: "amount"),
-                          DropdownMenuItem(child: Text("date"), value: "date"),
+                          DropdownMenuItem(value: "amount", child: Text("amount")),
+                          DropdownMenuItem(value: "date", child: Text("date")),
                         ], 
                         value: _dropdownValue,
                         onChanged: dropDownCallBack,

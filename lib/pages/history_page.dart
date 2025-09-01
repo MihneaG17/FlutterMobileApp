@@ -14,9 +14,16 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   String popupItem='Delete';
 
+  Map<String, IconData> categoryIcons = {
+      "food": Icons.fastfood,
+      "travel": Icons.directions_car,
+      "entertainment": Icons.movie,
+      "utilities": Icons.lightbulb,
+      "other": Icons.category,
+  };
+
   @override
   Widget build(BuildContext context) {
-
     final box = Hive.box<Transaction>('transactions');
     final transactions = box.keys.map((key) {
       final tx=box.get(key);
@@ -71,14 +78,14 @@ class _HistoryPageState extends State<HistoryPage> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
                               child: ListTile(
-                                leading: const Icon(Icons.monetization_on, color: Colors.green),
+                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline),
                                 title: Text(tx.category),
                                 subtitle: Text("${tx.amount.toStringAsFixed(2)} USD",
                                         style: const TextStyle(fontWeight: FontWeight.bold)),
                                 trailing: PopupMenuButton(itemBuilder: (context) => [
                                     PopupMenuItem(
-                                      child: Text(popupItem),
-                                      value: popupItem)
+                                      value: popupItem,
+                                      child: Text(popupItem))
                                 ],
                                 onSelected: (String popupItem) {
                                   if(popupItem == 'Delete')
@@ -90,7 +97,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 }),
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       );
                     }
