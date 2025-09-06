@@ -11,7 +11,7 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
-  final typeItems = ['Food', 'Travel', 'Entertainment', 'Utilities', 'Other'];
+  final typeItems = ['Food', 'Travel', 'Shopping', 'Entertainment', 'Utilities', 'Other'];
 
   String? selectedValue;
 

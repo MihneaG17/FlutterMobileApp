@@ -17,6 +17,7 @@ class _HistoryPageState extends State<HistoryPage> {
   Map<String, IconData> categoryIcons = {
       "food": Icons.fastfood,
       "travel": Icons.directions_car,
+      "shopping": Icons.shopping_bag,
       "entertainment": Icons.movie,
       "utilities": Icons.lightbulb,
       "other": Icons.category,
@@ -57,6 +58,8 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Expanded transactionsListTile(Map<String, List<MapEntry<dynamic, Transaction?>>> grouped, Box<Transaction> box) {
+    Color themeColor = Theme.of(context).primaryColor;
+    
     return Expanded(
               child: ListView(
                 children: 
@@ -78,7 +81,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
                               child: ListTile(
-                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline),
+                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline, color: themeColor),
                                 title: Text(tx.category),
                                 subtitle: Text("${tx.amount.toStringAsFixed(2)} USD",
                                         style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -90,9 +93,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 onSelected: (String popupItem) {
                                   if(popupItem == 'Delete')
                                   {
-                                    setState(() {
-                                      box.delete(mapEntry.key);
-                                    });
+                                    deleteDialog(box, mapEntry);
                                   }
                                 }),
                               ),
@@ -105,4 +106,31 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
             );
   }
-}
+
+                Future<dynamic> deleteDialog(Box<Transaction> box, MapEntry<dynamic, Transaction?> mapEntry) {
+                  return showDialog(
+                                    context: context, 
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text("Confirm Delete"),
+                                        content: const Text("Are you sure you want to delete the transaction?"),
+                                        actions: [
+                                          TextButton(
+                                            child: const Text("Cancel"),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            }),
+                                            TextButton(
+                                              child: const Text("Confirm"),
+                                              onPressed: () {
+                                                setState(() {
+                                                    box.delete(mapEntry.key);
+                                                  });
+                                                Navigator.of(context).pop();
+                                              },)
+                                        ],
+                                      );
+                                    }
+                                  );
+                    }
+                  }
