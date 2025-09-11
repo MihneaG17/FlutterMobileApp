@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'package:hive_flutter/hive_flutter.dart'; 
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+//pages import
 import 'package:moneyapp/transaction_model.dart';
 import 'package:moneyapp/pages/add_transactions_page.dart';
 import 'package:moneyapp/pages/history_page.dart';
@@ -11,6 +14,8 @@ import 'package:moneyapp/pages/settings_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); //widgets initialized before Hive start
 
+  //localisation
+  await initializeDateFormatting('en');
   //Hive initialisations
   await Hive.initFlutter(); 
   Hive.registerAdapter(TransactionAdapter()); 
@@ -26,10 +31,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       localizationsDelegates: const [
-        MonthYearPickerLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        MonthYearPickerLocalizations.delegate, 
       ],
       supportedLocales: const [
-        Locale('en'),
+        Locale('en', ''),
+        Locale('ro', ' '),
       ],
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

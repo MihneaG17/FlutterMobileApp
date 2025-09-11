@@ -14,6 +14,7 @@ class StatsPage extends StatefulWidget {
 class _StatsPageState extends State<StatsPage> {
   String _dropdownValue='daily';
   TextEditingController _dateController = TextEditingController();
+  TextEditingController _dateControllerMonthly = TextEditingController();
 
   void dropDownCallBack(String? selectedValue) {
     if(selectedValue is String) {
@@ -26,6 +27,7 @@ class _StatsPageState extends State<StatsPage> {
   @override
     void dispose() {
       _dateController.dispose();
+      _dateControllerMonthly.dispose();
       super.dispose();
     }
 
@@ -36,14 +38,32 @@ class _StatsPageState extends State<StatsPage> {
     final box = Hive.box<Transaction>('transactions');
     final allTx = box.values.toList();
     
-    DateTime selectedDate;
+    DateTime selectedDate = DateTime.now();
 
-    if(_dateController.text.isEmpty) {
-      selectedDate = DateTime.now();
-      _dateController.text = selectedDate.toString().split(" ")[0];
-    }
-    else {
-      selectedDate=DateTime.parse(_dateController.text);
+    if(_dropdownValue == 'monthly')
+    {
+      if(_dateControllerMonthly.text.isEmpty) {
+        final firstOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
+        _dateControllerMonthly.text = firstOfMonth.toIso8601String().split('T')[0];
+        selectedDate = firstOfMonth;
+      }
+      else {
+        try {
+          selectedDate=DateTime.parse(_dateControllerMonthly.text);
+        } catch (e) {
+          //fallback in case of invalid format
+          selectedDate=DateTime.now();
+          final firstOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
+          _dateControllerMonthly.text = firstOfMonth.toIso8601String().split('T')[0];
+        }
+      }
+    } else if(_dropdownValue == 'daily') {
+      try {
+        selectedDate = DateTime.parse(_dateController.text);
+      } catch (e) { 
+        selectedDate = DateTime.now();
+        _dateController.text = selectedDate.toString().split(" ")[0];
+      }
     }
 
     return Scaffold(
@@ -77,20 +97,18 @@ class _StatsPageState extends State<StatsPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              Expanded(
-                child: box.isEmpty ? 
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.insert_chart_outlined, size: 60),
-                          SizedBox(height: 12),
-                          Text("No transactions registered", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                          ]
-                      ),
-                    )
-                    : _buildStatsContent(_dropdownValue, context, box, allTx, selectedDate),
-              ),
+              box.isEmpty ? 
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.insert_chart_outlined, size: 60),
+                        SizedBox(height: 12),
+                        Text("No transactions registered", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                        ]
+                    ),
+                  )
+                  : _buildStatsContent(_dropdownValue, context, box, allTx, selectedDate),
           ],
         ),
     );
@@ -108,6 +126,7 @@ class _StatsPageState extends State<StatsPage> {
           return Placeholder();
       }
   }
+
   Column dailyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
     final filteredTxDaily = allTx.where((tx) => 
       tx.date.year == selectedDate.year &&
@@ -243,9 +262,11 @@ class _StatsPageState extends State<StatsPage> {
           ],
         );
       }
-  Column monthlyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
-    TextEditingController _dateControllerMonthly = TextEditingController();
-    return Column(
+
+  // ...existing code...
+Builder monthlyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
+  return Builder(
+    builder: (pickerContext) => Column(
       children: [
         Text("Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
         SizedBox(height: 10),
@@ -272,14 +293,15 @@ class _StatsPageState extends State<StatsPage> {
               readOnly: true,
               onTap: () async {
                 final picked = await showMonthYearPicker(
-                  context: context,
+                  context: pickerContext, // <-- use pickerContext here!
                   initialDate: selectedDate,
                   firstDate: DateTime(2000), 
                   lastDate: DateTime(2100)
                 );
                 if(picked!=null) {
                   setState(() {
-                    _dateControllerMonthly.text = DateTime(picked.year, picked.month, 1).toIso8601String().split("T")[0];
+                   final normalized = DateTime(picked.year, picked.month, 1);
+                    _dateControllerMonthly.text = normalized.toIso8601String().split("T")[0];
                   });
                 }
               },
@@ -288,8 +310,9 @@ class _StatsPageState extends State<StatsPage> {
         ),
         const SizedBox(height: 20),
       ],
-    );
-  }
+    ),
+  );
+}
   Future<void> _selectDate() async {
     DateTime? _picked = await showDatePicker(
       context: context,
