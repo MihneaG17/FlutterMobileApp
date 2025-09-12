@@ -13,6 +13,7 @@ class StatsPage extends StatefulWidget {
 
 class _StatsPageState extends State<StatsPage> {
   String _dropdownValue='daily';
+  int _selectedYear = DateTime.now().year;
   TextEditingController _dateController = TextEditingController();
   TextEditingController _dateControllerMonthly = TextEditingController();
 
@@ -121,9 +122,9 @@ class _StatsPageState extends State<StatsPage> {
         case "monthly":
           return monthlyStats(context, box, allTx, selectedDate);
         case "yearly": 
-          return Placeholder();
+          return yearlyStats(context, box, allTx, selectedDate);
         default: 
-          return Placeholder();
+          return dailyStats(context, box, allTx, selectedDate);
       }
   }
 
@@ -235,23 +236,23 @@ class _StatsPageState extends State<StatsPage> {
                           Text("Category Breakdown",  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                           SizedBox(height: 10),
                           ListView.builder(  
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: categoryTotalsDaily.length,
-                        itemBuilder: (context, index) {
-                          final entry = categoryTotalsDaily.entries.elementAt(index);
-                          final percent = totalSpentDaily > 0
-                              ? (entry.value / totalSpentDaily * 100).toStringAsFixed(1)
-                              : "0";
-                          return ListTile(
-                            leading: Icon(Icons.label),
-                            title: Text(entry.key),
-                            trailing: Text(
-                              "${entry.value.toStringAsFixed(2)} USD ($percent%)",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          );
-                        },
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: categoryTotalsDaily.length,
+                            itemBuilder: (context, index) {
+                              final entry = categoryTotalsDaily.entries.elementAt(index);
+                              final percent = totalSpentDaily > 0
+                                  ? (entry.value / totalSpentDaily * 100).toStringAsFixed(1)
+                                  : "0";
+                              return ListTile(
+                                leading: Icon(Icons.label),
+                                title: Text(entry.key),
+                                trailing: Text(
+                                  "${entry.value.toStringAsFixed(2)} USD ($percent%)",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              );
+                            },
                       ) 
                     ],
                   )
@@ -263,8 +264,36 @@ class _StatsPageState extends State<StatsPage> {
         );
       }
 
-  // ...existing code...
 Builder monthlyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
+  final filteredTxMonthly = allTx.where((tx) => 
+    tx.date.year == selectedDate.year &&
+    tx.date.month == selectedDate.month
+  ).toList();
+
+  final totalSpentMonthly = filteredTxMonthly.fold(0.0, (sum, tx) => sum + tx.amount);
+  final transactionsCountMonthly = filteredTxMonthly.length;
+  // final averageSpentMonthly = filteredTxMonthly.isNotEmpty
+  //         ? totalSpentMonthly/transactionsCountMonthly
+  //         : 0.0;
+  final daysInMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0).day; //(...+1, 0) means that in this variable we store the last day of the previos month - trick to get the number of days in the month
+  final averageSpentPerDay = totalSpentMonthly / daysInMonth;
+
+  Map<String, double> categoryTotalsMonthly = {};
+  Map<String, double> categoryExistingMonthly = {};
+
+  for(var tx in filteredTxMonthly)
+  {
+    categoryTotalsMonthly[tx.category] = (categoryTotalsMonthly[tx.category] ?? 0)+tx.amount;
+    categoryExistingMonthly[tx.category] = (categoryExistingMonthly[tx.category] ?? 0)+1;
+  }
+
+  String topCategoryMonthly="None";
+
+  if(categoryTotalsMonthly.isNotEmpty) {
+      topCategoryMonthly = categoryTotalsMonthly.entries.reduce((a,b) => a.value > b.value ? a : b).key;
+  }
+
+
   return Builder(
     builder: (pickerContext) => Column(
       children: [
@@ -293,7 +322,7 @@ Builder monthlyStats(BuildContext context, final box, final allTx, DateTime sele
               readOnly: true,
               onTap: () async {
                 final picked = await showMonthYearPicker(
-                  context: pickerContext, // <-- use pickerContext here!
+                  context: pickerContext, 
                   initialDate: selectedDate,
                   firstDate: DateTime(2000), 
                   lastDate: DateTime(2100)
@@ -309,34 +338,270 @@ Builder monthlyStats(BuildContext context, final box, final allTx, DateTime sele
           ),
         ),
         const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              Card(
+                    child: ListTile(
+                      leading: Icon(Icons.account_balance_wallet),
+                      title: Text("Total spent: "),
+                      trailing: Text("${totalSpentMonthly} USD", style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.calculate),
+                      title: Text("Average spent: "),
+                      trailing: Text("${averageSpentPerDay.toStringAsFixed(2)} USD", style: TextStyle(fontSize: 14)), //Average spent section for "daily" option will be the same as Total spent
+                      )
+                    ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.trending_up),
+                      title: Text("Transactions: "),
+                      trailing: Text("${transactionsCountMonthly}", style: TextStyle(fontSize: 14)),
+                      )
+                    ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.leaderboard),
+                      title: Text("Top category: "),
+                      trailing: Text("${topCategoryMonthly}", style: TextStyle(fontSize: 14)),
+                      )
+                    ),
+                  SizedBox(height: 20),
+                  filteredTxMonthly.isEmpty 
+                  ? Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text("No data for pie chart.",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),), 
+                  )
+                  : PieChart(
+                    dataMap: categoryTotalsMonthly,
+                    legendOptions: LegendOptions(legendPosition: LegendPosition.bottom),
+                    chartValuesOptions: ChartValuesOptions(
+                      showChartValuesInPercentage: true,
+                    ),
+                    ),
+                  SizedBox(height: 20),
+                  categoryExistingMonthly.isNotEmpty 
+                  ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Category Breakdown", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 10),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: categoryExistingMonthly.length,
+                        itemBuilder: (context, index) {
+                          final entry = categoryTotalsMonthly.entries.elementAt(index);
+                          final percent = totalSpentMonthly > 0 
+                            ? (entry.value / totalSpentMonthly * 100).toStringAsFixed(1)
+                            : "0";
+                          return ListTile(
+                            leading: Icon(Icons.label),
+                            title: Text(entry.key),
+                            trailing: Text(
+                              "${entry.value.toStringAsFixed(2)} USD ($percent%)",
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                  : SizedBox.shrink(),
+            ],
+          ),
+        )
       ],
     ),
   );
 }
-  Future<void> _selectDate() async {
-    DateTime? _picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(), 
-      firstDate: DateTime(2000), 
-      lastDate: DateTime(2100),
-      builder: (context, child) { //date picker's theme
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Theme.of(context).primaryColor,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+
+Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
+  final filteredTxYearly = allTx.where((tx) =>
+    tx.date.year == _selectedYear
+  ).toList();
+
+  final totalSpentYearly = filteredTxYearly.fold(0.0, (sum, tx) => sum + tx.amount); 
+  final transactionsCountYearly = filteredTxYearly.length;
+
+  final averageSpentPerMonth = totalSpentYearly / 12;
+
+  Map<String, double> categoryTotalsYearly = {};
+  Map<String, double> categoryExistingYearly = {};
+
+  for(var tx in filteredTxYearly) {
+    categoryTotalsYearly[tx.category]=(categoryTotalsYearly[tx.category] ?? 0) + tx.amount;
+    categoryExistingYearly[tx.category]=(categoryExistingYearly[tx.category] ?? 0)+1;
+  }
+
+  String topCategoryYearly = "None";
+
+  if(categoryTotalsYearly.isNotEmpty) {
+      topCategoryYearly = categoryTotalsYearly.entries.reduce((a,b) => a.value > b.value ? a : b).key;
+  }
+  return Builder(
+    builder: (pickerContext) => Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        SizedBox(height: 10),
+        Text("Select a year: ", style: TextStyle(fontSize: 14)),
+        SizedBox(height: 10),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[300],
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).primaryColor,
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.calendar_today, color: Colors.black),
+              SizedBox(width: 8),
+              Text(
+                  "${_selectedYear}", 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
+              onPressed: () {
+                showDialog(
+                  context: context, 
+                  builder: (ctx) => AlertDialog(
+                    title: Text('Select a year'),
+                    content: Container(
+                      width: 300,
+                      height: 300,
+                      child: YearPicker(
+                        firstDate: DateTime(2000), 
+                        lastDate: DateTime(2100), 
+                        initialDate: DateTime(_selectedYear, 1, 1),
+                        selectedDate: DateTime(_selectedYear, 1, 1), 
+                        onChanged: (DateTime picked) {
+                          setState(() {
+                            _selectedYear = picked.year;
+                          });
+                          Navigator.pop(ctx);
+                        }
+                      ),
+                    ),
+                  ),
+              );
+          }             
+        ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              Card(
+                    child: ListTile(
+                      leading: Icon(Icons.account_balance_wallet),
+                      title: Text("Total spent: "),
+                      trailing: Text("${totalSpentYearly} USD", style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.calculate),
+                      title: Text("Average spent: "),
+                      trailing: Text("${averageSpentPerMonth.toStringAsFixed(2)} USD", style: TextStyle(fontSize: 14)), //Average spent section for "daily" option will be the same as Total spent
+                      )
+                    ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.trending_up),
+                      title: Text("Transactions: "),
+                      trailing: Text("${transactionsCountYearly}", style: TextStyle(fontSize: 14)),
+                      )
+                    ),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.leaderboard),
+                      title: Text("Top category: "),
+                      trailing: Text("${topCategoryYearly}", style: TextStyle(fontSize: 14)),
+                      )
+                    ),
+                    SizedBox(height: 20),
+                  filteredTxYearly.isNotEmpty
+                  ? PieChart(
+                      dataMap: categoryTotalsYearly,
+                      legendOptions: LegendOptions(legendPosition: LegendPosition.bottom),
+                      chartValuesOptions: ChartValuesOptions(
+                      showChartValuesInPercentage: true)
+                  )
+                  : Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text("No data for pie chart.",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),), 
+                  ),
+                  SizedBox(height: 20),
+                  categoryExistingYearly.isNotEmpty
+                  ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Category Breakdown", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 10),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: categoryExistingYearly.length,
+                        itemBuilder: (context, index) {
+                          final entry = categoryTotalsYearly.entries.elementAt(index);
+                          final percent = totalSpentYearly > 0
+                          ? (entry.value / totalSpentYearly * 100).toStringAsFixed(1)
+                          : "0";
+                          return ListTile(
+                            leading: Icon(Icons.label),
+                            title: Text(entry.key),
+                            trailing: Text("${entry.value.toStringAsFixed(2)} USD ($percent%)",
+                            style: TextStyle(fontSize: 14)),
+                          );
+                        }
+                      ),
+                    ],
+                  )
+                  : SizedBox.shrink(),
+                ]
+            )    
+        )
+      ],
+    )
+  );
+}
+//used for the daily datePicker
+Future<void> _selectDate() async {
+  DateTime? _picked = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(), 
+    firstDate: DateTime(2000), 
+    lastDate: DateTime(2100),
+    builder: (context, child) { //date picker's theme
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(
+            primary: Theme.of(context).primaryColor,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).primaryColor,
             ),
-          ), 
-          child: child!
-          );
-        }
-      );
+          ),
+        ), 
+        child: child!
+        );
+      }
+    );
 
     if(_picked != null) {
       setState(() {
