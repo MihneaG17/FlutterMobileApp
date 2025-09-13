@@ -176,8 +176,36 @@ class _StatsPageState extends State<StatsPage> {
                     ),
                   ),
                   readOnly: true,
-                  onTap: () {
-                    _selectDate();
+                  onTap: () async {
+                      DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(), 
+                        firstDate: DateTime(2000), 
+                        lastDate: DateTime(2100),
+                        builder: (context, child) { //date picker's theme
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: Theme.of(context).primaryColor,
+                                onPrimary: Colors.white,
+                                onSurface: Colors.black,
+                              ),
+                              textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Theme.of(context).primaryColor,
+                                    ),
+                                  ),
+                                ), 
+                        child: child!
+                      );
+                    }
+                  );
+
+                  if(picked != null) {
+                    setState(() {
+                      _dateController.text = picked.toString().split(" ")[0];
+                      });
+                    }
                   },
                 ),
               ),
@@ -250,19 +278,19 @@ class _StatsPageState extends State<StatsPage> {
                                 trailing: Text(
                                   "${entry.value.toStringAsFixed(2)} USD ($percent%)",
                                   style: TextStyle(fontSize: 14),
-                                ),
-                              );
-                            },
-                      ) 
-                    ],
-                  )
-                  : SizedBox.shrink(),
-                ],
-              ),
-            )
-          ],
-        );
-      }
+                              ),
+                            );
+                          },
+                    ) 
+                  ],
+                )
+                : SizedBox.shrink(),
+              ],
+            ),
+          )
+        ],
+      );
+    }
 
 Builder monthlyStats(BuildContext context, final box, final allTx, DateTime selectedDate) {
   final filteredTxMonthly = allTx.where((tx) => 
@@ -272,9 +300,7 @@ Builder monthlyStats(BuildContext context, final box, final allTx, DateTime sele
 
   final totalSpentMonthly = filteredTxMonthly.fold(0.0, (sum, tx) => sum + tx.amount);
   final transactionsCountMonthly = filteredTxMonthly.length;
-  // final averageSpentMonthly = filteredTxMonthly.isNotEmpty
-  //         ? totalSpentMonthly/transactionsCountMonthly
-  //         : 0.0;
+
   final daysInMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0).day; //(...+1, 0) means that in this variable we store the last day of the previos month - trick to get the number of days in the month
   final averageSpentPerDay = totalSpentMonthly / daysInMonth;
 
@@ -346,7 +372,7 @@ Builder monthlyStats(BuildContext context, final box, final allTx, DateTime sele
                     child: ListTile(
                       leading: Icon(Icons.account_balance_wallet),
                       title: Text("Total spent: "),
-                      trailing: Text("${totalSpentMonthly} USD", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$totalSpentMonthly USD", style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   Card(
@@ -360,14 +386,14 @@ Builder monthlyStats(BuildContext context, final box, final allTx, DateTime sele
                     child: ListTile(
                       leading: Icon(Icons.trending_up),
                       title: Text("Transactions: "),
-                      trailing: Text("${transactionsCountMonthly}", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$transactionsCountMonthly", style: TextStyle(fontSize: 14)),
                       )
                     ),
                   Card(
                     child: ListTile(
                       leading: Icon(Icons.leaderboard),
                       title: Text("Top category: "),
-                      trailing: Text("${topCategoryMonthly}", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$topCategoryMonthly", style: TextStyle(fontSize: 14)),
                       )
                     ),
                   SizedBox(height: 20),
@@ -467,7 +493,7 @@ Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selec
               Icon(Icons.calendar_today, color: Colors.black),
               SizedBox(width: 8),
               Text(
-                  "${_selectedYear}", 
+                  "$_selectedYear", 
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -483,7 +509,6 @@ Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selec
                       child: YearPicker(
                         firstDate: DateTime(2000), 
                         lastDate: DateTime(2100), 
-                        initialDate: DateTime(_selectedYear, 1, 1),
                         selectedDate: DateTime(_selectedYear, 1, 1), 
                         onChanged: (DateTime picked) {
                           setState(() {
@@ -506,7 +531,7 @@ Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selec
                     child: ListTile(
                       leading: Icon(Icons.account_balance_wallet),
                       title: Text("Total spent: "),
-                      trailing: Text("${totalSpentYearly} USD", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$totalSpentYearly USD", style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   Card(
@@ -520,14 +545,14 @@ Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selec
                     child: ListTile(
                       leading: Icon(Icons.trending_up),
                       title: Text("Transactions: "),
-                      trailing: Text("${transactionsCountYearly}", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$transactionsCountYearly", style: TextStyle(fontSize: 14)),
                       )
                     ),
                   Card(
                     child: ListTile(
                       leading: Icon(Icons.leaderboard),
                       title: Text("Top category: "),
-                      trailing: Text("${topCategoryYearly}", style: TextStyle(fontSize: 14)),
+                      trailing: Text("$topCategoryYearly", style: TextStyle(fontSize: 14)),
                       )
                     ),
                     SizedBox(height: 20),
@@ -572,41 +597,9 @@ Builder yearlyStats(BuildContext context, final box, final allTx, DateTime selec
                   : SizedBox.shrink(),
                 ]
             )    
-        )
-      ],
-    )
-  );
-}
-//used for the daily datePicker
-Future<void> _selectDate() async {
-  DateTime? _picked = await showDatePicker(
-    context: context,
-    initialDate: DateTime.now(), 
-    firstDate: DateTime(2000), 
-    lastDate: DateTime(2100),
-    builder: (context, child) { //date picker's theme
-      return Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: Theme.of(context).primaryColor,
-            onPrimary: Colors.white,
-            onSurface: Colors.black,
-          ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).primaryColor,
-            ),
-          ),
-        ), 
-        child: child!
-        );
-      }
+          )
+        ],
+      )
     );
-
-    if(_picked != null) {
-      setState(() {
-        _dateController.text = _picked.toString().split(" ")[0];
-      });
-    }
-  } 
+  }
 }
