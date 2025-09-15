@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart'; //for date formatting
-
 import 'package:moneyapp/transaction_model.dart';
 
 class HistoryPage extends StatefulWidget {
