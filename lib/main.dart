@@ -3,9 +3,11 @@ import 'package:month_year_picker/month_year_picker.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 
 //pages import
 import 'package:moneyapp/transaction_model.dart';
+import 'package:moneyapp/theme_provider.dart';
 import 'package:moneyapp/pages/add_transactions_page.dart';
 import 'package:moneyapp/pages/history_page.dart';
 import 'package:moneyapp/pages/stats_page.dart';
@@ -21,7 +23,10 @@ Future<void> main() async {
   Hive.registerAdapter(TransactionAdapter()); 
   await Hive.openBox<Transaction>('transactions');
 
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -29,6 +34,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -41,20 +48,42 @@ class MyApp extends StatelessWidget {
         Locale('ro', ' '),
       ],
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Poppins',
+      theme: themeProvider.isDarkMode 
+        ? _darkTheme()
+        : _lightTheme(),
+      home: HomeScreen()
+    );
+  }
+
+  ThemeData _lightTheme() {
+    return ThemeData(
+      fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Color.fromARGB(255, 17, 1, 195),
-          brightness: Brightness.light,  //TO-DO - dark theme-Brightness.dark
-        ),
-        textTheme: TextTheme(
+          brightness: Brightness.light,
+      ),
+      textTheme: TextTheme(
           displayLarge: const TextStyle(
             fontSize: 72,
             fontWeight: FontWeight.bold,
           ),
         )
+    );
+  }
+
+  ThemeData _darkTheme() {
+    return ThemeData(
+      fontFamily: 'Poppins',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Color.fromARGB(255, 17, 1, 195),
+          brightness: Brightness.dark,
       ),
-      home: HomeScreen()
+      textTheme: TextTheme(
+          displayLarge: const TextStyle(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
+          ),
+        )
     );
   }
 }
@@ -183,10 +212,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300),
-              ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+                ),
           child: Column(
           children: transactions.map((tx) {
           return ListTile(
@@ -196,10 +224,9 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Text(tx.category),
             subtitle: Text(tx.date.toString().split(" ")[0]),
             trailing: Text(
-            "${tx.amount.toStringAsFixed(2)} USD",
-            style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+                "${tx.amount.toStringAsFixed(2)} USD",
+                style: const TextStyle(
+                fontWeight: FontWeight.bold,
                 ),
               ),
             );

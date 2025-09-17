@@ -57,8 +57,6 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Expanded transactionsListTile(Map<String, List<MapEntry<dynamic, Transaction?>>> grouped, Box<Transaction> box) {
-    Color themeColor = Theme.of(context).primaryColor;
-    
     return Expanded(
               child: ListView(
                 children: 
@@ -80,7 +78,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
                               child: ListTile(
-                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline, color: themeColor),
+                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline),
                                 title: Text(tx.category),
                                 subtitle: Text("${tx.amount.toStringAsFixed(2)} USD",
                                         style: const TextStyle(fontWeight: FontWeight.bold)),

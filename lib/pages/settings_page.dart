@@ -4,6 +4,8 @@ import 'package:crypto/crypto.dart'; //for hashing with SHA-256 algorithm
 import 'package:email_validator/email_validator.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; //mobile secured storage
+import 'package:provider/provider.dart';
+import 'package:moneyapp/theme_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:moneyapp/transaction_model.dart';
 
@@ -435,8 +437,23 @@ class _SettingsPageState extends State<SettingsPage> {
             Divider(),
             SizedBox(height: 8),
             Text('Other settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Dark theme', style: TextStyle(fontSize: 16),),
+                SizedBox(
+                    width: 60,
+                    child: Switch(
+                      value: context.watch<ThemeProvider>().isDarkMode,
+                      onChanged: (value) => context.read<ThemeProvider>().toggleTheme(value),
+                  ),
+                ),
+              ],
+            ),
             //more settings coming soon
-            SizedBox(height: 8),
+            SizedBox(height: 20),
+            Divider(),
             ListTile(
               leading: Icon(Icons.info),
               title: Text('About'),
