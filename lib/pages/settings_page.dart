@@ -441,7 +441,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Dark theme', style: TextStyle(fontSize: 16),),
+                Text('Dark theme', style: TextStyle(fontSize: 16)),
                 SizedBox(
                     width: 60,
                     child: Switch(
@@ -451,7 +451,49 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
             ),
-            //more settings coming soon
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Clear all transactions', style: TextStyle(fontSize: 16)),
+                SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text('Clear transactions?'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Are you sure you want to clear all the transactions history? This action cannot be undone.'),
+                          SizedBox(height: 12),
+                          ],
+                        ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Clear', style: TextStyle(color: Colors.red))),
+                        ],
+                      )
+                    );
+                    if(confirmed == true) {
+                        try {
+                          final box = Hive.box<Transaction>('transactions');
+                          await box.clear();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('All transactions cleared.')));
+                          if(mounted) {
+                            setState(() {}); //forces the UI to rebuild
+                          }
+                        }
+                        catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error clearing transactions: $e')));
+                        }
+                    }
+                  }, 
+                ),
+              ],
+            ),
             SizedBox(height: 20),
             Divider(),
             ListTile(

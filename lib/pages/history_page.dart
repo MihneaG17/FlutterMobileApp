@@ -49,8 +49,20 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       body: Column(
             children: [
-              const SizedBox(height: 30),
-              transactionsListTile(grouped, box),
+              SizedBox(height: 30),
+              box.isEmpty 
+              ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(height: 42),
+                        Icon(Icons.history, size: 60),
+                        SizedBox(height: 12),
+                        Text("No transactions registered", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                        ]
+                    ),
+                  )
+              : transactionsListTile(grouped, box),
             ],
           ),
     );

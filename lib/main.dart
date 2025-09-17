@@ -181,9 +181,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context, Box<Transaction> box, _) {
                   
                   if (box.isEmpty) {
-                    return const Text(
-                      "No transactions registered",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    return Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            "No transactions registered",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 200)
+                        ],
+                      ),
                     );
                   }
 
