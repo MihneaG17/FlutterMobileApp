@@ -22,6 +22,16 @@ class _HistoryPageState extends State<HistoryPage> {
       "other": Icons.category,
   };
 
+  Map<String, Color> categoryColors = {
+      "food": Colors.red,
+      "travel": Colors.blue,
+      "shopping": Colors.purple,
+      "entertainment": Colors.orange,
+      "utilities": Colors.green,
+      "other": const Color.fromARGB(255, 100, 202, 220),
+  };
+
+
   @override
   Widget build(BuildContext context) {
     final box = Hive.box<Transaction>('transactions');
@@ -90,7 +100,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 
                               child: ListTile(
-                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline),
+                                leading: Icon(categoryIcons[tx.category.toLowerCase()] ?? Icons.help_outline, color: categoryColors[tx.category.toLowerCase()]),
                                 title: Text(tx.category),
                                 subtitle: Text("${tx.amount.toStringAsFixed(2)} USD",
                                         style: const TextStyle(fontWeight: FontWeight.bold)),

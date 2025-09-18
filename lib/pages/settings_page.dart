@@ -8,6 +8,10 @@ import 'package:provider/provider.dart';
 import 'package:moneyapp/theme_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:moneyapp/transaction_model.dart';
+import 'dart:io';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({super.key});
@@ -61,6 +65,46 @@ class _SettingsPageState extends State<SettingsPage> {
     _newPwdCtrl.dispose();
     _newPwdConfirmCtrl.dispose();
     super.dispose();
+  }
+
+  //Export transactions to PDF file
+  Future<void> exportTransactionsToPdf() async {
+      final box = Hive.box<Transaction>('transactions');
+      final transactions = box.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Transactions Export', 
+                    style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+
+                ...transactions.map((tx) {
+                  return pw.Container(
+                    margin: const pw.EdgeInsets.symmetric(vertical: 4),
+                    child: pw.Text(
+                        "${tx.date.toString().split(" ")[0]} - ${tx.category} - ${tx.amount.toStringAsFixed(2)} USD",
+                        style: const pw.TextStyle(fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+              ]
+            );
+          }
+        )
+      );
+
+      final output = await getApplicationDocumentsDirectory();
+      final file = File("${output.path}/transactions_export.pdf");
+      await file.writeAsBytes(await pdf.save());
+
+      //open file after export
+      await OpenFile.open(file.path);
   }
 
   //Storage helpers
@@ -492,6 +536,21 @@ class _SettingsPageState extends State<SettingsPage> {
                     }
                   }, 
                 ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                  Text('Export transactions as PDF', style: TextStyle(fontSize: 16)),
+                  SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.picture_as_pdf),
+                    onPressed: () async {
+                      await exportTransactionsToPdf();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Exported transactions as PDF')));
+                    },
+                  )
               ],
             ),
             SizedBox(height: 20),
